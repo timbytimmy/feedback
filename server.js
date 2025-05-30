@@ -12,12 +12,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// MySQL connection
-const db = mysql.createConnection({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'CUSTOMERFEEDBACK'
+// MySQL connection using Railway's connection URL
+const db = mysql.createConnection(process.env.DATABASE_URL || {
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'CUSTOMERFEEDBACK'
 });
 
 // Handle database connection errors
@@ -27,6 +27,45 @@ db.connect((err) => {
     return;
   }
   console.log('Connected to MySQL database');
+  
+  // Create tables if they don't exist
+  const createTables = `
+    CREATE TABLE IF NOT EXISTS admins (
+      admin_id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(100) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS feedbacks (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(100) NOT NULL,
+      feedback TEXT NOT NULL,
+      submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  db.query(createTables, (err) => {
+    if (err) {
+      console.error('Error creating tables:', err);
+      return;
+    }
+    console.log('Tables created or already exist');
+
+    // Insert default admin if not exists
+    const insertAdmin = `
+      INSERT IGNORE INTO admins (name, email, password)
+      VALUES ('Admin User', 'admin@admin.com', 'password')
+    `;
+    db.query(insertAdmin, (err) => {
+      if (err) {
+        console.error('Error inserting default admin:', err);
+        return;
+      }
+      console.log('Default admin created or already exists');
+    });
+  });
 });
 
 // Handle database disconnection
