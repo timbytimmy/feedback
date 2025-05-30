@@ -33,16 +33,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const feedback = document.getElementById('feedback').value.trim();
-            if (!name || !email || !feedback) return;
-            const res = await fetch('/api/feedback', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, feedback })
-            });
-            if (res.ok) {
-                feedbackForm.reset();
+            
+            if (!name || !email || !feedback) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, feedback })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    feedbackForm.reset();
+                    feedbackSuccess.style.display = 'block';
+                    feedbackSuccess.textContent = 'Thank you for your feedback!';
+                    setTimeout(() => feedbackSuccess.style.display = 'none', 3000);
+                } else {
+                    throw new Error(data.error || 'Failed to submit feedback');
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
                 feedbackSuccess.style.display = 'block';
-                setTimeout(() => feedbackSuccess.style.display = 'none', 3000);
+                feedbackSuccess.style.color = 'red';
+                feedbackSuccess.textContent = error.message || 'Failed to submit feedback. Please try again.';
+                setTimeout(() => {
+                    feedbackSuccess.style.display = 'none';
+                    feedbackSuccess.style.color = 'green';
+                }, 3000);
             }
         });
     }

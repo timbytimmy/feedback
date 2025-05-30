@@ -14,18 +14,30 @@ app.use(express.static('public'));
 
 // MySQL connection
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'password', // Set your MySQL password
-  database: 'CUSTOMERFEEDBACK'
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'password',
+  database: process.env.DB_NAME || 'CUSTOMERFEEDBACK'
 });
 
+// Handle database connection errors
 db.connect((err) => {
   if (err) {
     console.error('Error connecting to database:', err);
     return;
   }
   console.log('Connected to MySQL database');
+});
+
+// Handle database disconnection
+db.on('error', (err) => {
+  console.error('Database error:', err);
+  if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+    // Reconnect if connection is lost
+    db.connect();
+  } else {
+    throw err;
+  }
 });
 
 const admins = [
