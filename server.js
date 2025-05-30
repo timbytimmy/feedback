@@ -14,11 +14,11 @@ app.use(express.static('public'));
 
 // MySQL connection using Railway's public network
 const db = mysql.createConnection({
-  host: 'switchyard.proxy.rlwy.net',
-  port: 37088,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'railway'
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
 
 // Handle database connection errors
