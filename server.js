@@ -12,12 +12,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// MySQL connection using Railway's connection URL
-const db = mysql.createConnection(process.env.DATABASE_URL || {
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'CUSTOMERFEEDBACK'
+// MySQL connection using Railway's public network
+const db = mysql.createConnection({
+  host: 'switchyard.proxy.rlwy.net',
+  port: 37088,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'password',
+  database: process.env.DB_NAME || 'railway'
 });
 
 // Handle database connection errors
